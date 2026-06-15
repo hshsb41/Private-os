@@ -4,49 +4,59 @@ const { Server } = require('socket.io');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" }, maxHttpBufferSize: 1e7 });
+const io = new Server(server, { 
+    cors: { origin: "*" },
+    maxHttpBufferSize: 1e7 // १०MB Limit
+});
 
 app.use(express.static(__dirname));
 
 const users = {};
-let chats = [];
+let messages = [];
 
+// १ घण्टा भन्दा पुरानो म्यासेज डिलिट गर्ने
 setInterval(() => {
     const now = Date.now();
-    chats = chats.filter(c => now - c.time < 3600000);
+    messages = messages.filter(m => now - m.time < 3600000);
 }, 60000);
 
 io.on('connection', (socket) => {
-    socket.on('join', (data) => {
-        users[socket.id] = { name: data.name, avatar: data.avatar };
-        chats.forEach(c => socket.emit('msg', c));
-        const list = Object.keys(users)
-            .filter(id => id !== socket.id)
-            .map(id => ({ id, name: users[id].name, avatar: users[id].avatar }));
-        socket.emit('users', list);
+    socket.on('join-room', (data) => {
+        users[socket.id] = { username: data.username, avatar: data.avatar, room: data.room };
+        socket.join(data.room);
+        messages.forEach(m => socket.emit('new-msg', m));
+
+        const participants = Object.keys(users)
+            .filter(id => users[id].room === data.room && id !== socket.id)
+            .map(id => ({ socketId: id, username: users[id].username, avatar: users[id].avatar }));
+        socket.emit('all-participants', participants);
     });
 
-    socket.on('signal', d => {
-        io.to(d.to).emit('signal', { sig: d.sig, from: socket.id, name: d.name, avatar: d.avatar });
+    socket.on('sending-signal', p => {
+        io.to(p.userToSignal).emit('user-joined', { signal: p.signal, callerID: p.callerID, username: p.username, avatar: p.avatar });
     });
 
-    socket.on('msg', d => {
-        const m = { ...d, time: Date.now() };
-        chats.push(m);
-        io.emit('msg', m);
+    socket.on('returning-signal', p => {
+        io.to(p.callerID).emit('receiving-returned-signal', { signal: p.signal, id: socket.id });
     });
 
-    socket.on('talk', s => {
-        if(users[socket.id]) socket.broadcast.emit('talk', { id: socket.id, talk: s });
+    socket.on('send-msg', (data) => {
+        const msg = { ...data, time: Date.now() };
+        messages.push(msg);
+        io.emit('new-msg', msg);
+    });
+
+    socket.on('speak', (status) => {
+        if(users[socket.id]) socket.to(users[socket.id].room).emit('user-speak', { id: socket.id, talk: status });
     });
 
     socket.on('disconnect', () => {
         if (users[socket.id]) {
-            io.emit('left', socket.id);
+            io.emit('user-left', socket.id);
             delete users[socket.id];
         }
     });
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Live: ${PORT}`));
+server.listen(PORT, () => console.log(`Server live at ${PORT}`));
