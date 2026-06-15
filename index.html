@@ -3,70 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Global Voice | Premium</title>
+    <title>VoiceApp Pro</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div id="audio-container"></div>
+    <div id="audio-dump"></div>
 
     <!-- Join Screen -->
-    <div id="join-page" class="full-screen">
+    <div id="join-screen" class="full-page">
         <div class="join-box">
-            <div class="avatar-setup" onclick="document.getElementById('avatar-input').click()">
+            <div class="avatar-circle" onclick="document.getElementById('avatar-input').click()">
                 <img id="preview" src="https://i.ibb.co/Y4KjTgvP/Picsart-26-02-07-02-21-57-621.jpg">
-                <div class="cam-btn"><i class="fas fa-camera"></i></div>
                 <input type="file" id="avatar-input" hidden accept="image/*">
             </div>
-            <input type="text" id="username" placeholder="ENTER NAME" maxlength="10" autocomplete="off">
-            <button id="join-btn">START CALL</button>
+            <input type="text" id="username" placeholder="NAME" maxlength="10">
+            <button id="join-btn">JOIN CALL</button>
         </div>
     </div>
 
-    <!-- Main App Screen -->
-    <div id="main-app" class="app-screen hidden">
-        <header class="app-header">
-            <div class="header-left">
-                <img src="https://i.ibb.co/Y4KjTgvP/Picsart-26-02-07-02-21-57-621.jpg" class="header-logo">
-                <div class="header-info">
-                    <b class="brand">GLOBAL VOICE</b>
-                    <span id="call-timer">00:00</span>
+    <!-- Main App -->
+    <div id="main-app" class="app-container hidden">
+        <header class="header">
+            <div class="h-left">
+                <img src="https://i.ibb.co/Y4KjTgvP/Picsart-26-02-07-02-21-57-621.jpg" class="mini-logo">
+                <div class="h-info">
+                    <b>GLOBAL VOICE</b>
+                    <span id="timer">00:00</span>
                 </div>
             </div>
-            <div class="online-pill">LIVE: <span id="count">1</span></div>
+            <div class="online-tag"><span id="count">1</span> ONLINE</div>
         </header>
 
-        <main class="app-body">
+        <main class="content">
             <!-- Voice Grid -->
-            <div id="voice-tab" class="tab-view">
-                <div id="user-grid" class="grid-layout"></div>
+            <div id="voice-view" class="view">
+                <div id="user-grid" class="grid"></div>
             </div>
 
-            <!-- Chat Tab -->
-            <div id="chat-tab" class="tab-view hidden">
-                <div id="chat-messages" class="message-list"></div>
-                <form id="chat-form" class="chat-input-bar">
-                    <label for="chat-file" class="chat-icon"><i class="fas fa-image"></i></label>
-                    <input type="file" id="chat-file" hidden accept="image/*">
-                    <input type="text" id="chat-input" placeholder="Type here..." autocomplete="off">
-                    <button type="submit" id="send-btn"><i class="fas fa-paper-plane"></i></button>
-                </form>
+            <!-- Chat Section -->
+            <div id="chat-view" class="view hidden">
+                <div id="chat-box" class="chat-messages"></div>
+                <div class="chat-bar">
+                    <label for="c-img" class="c-icon"><i class="fas fa-image"></i></label>
+                    <input type="file" id="c-img" hidden accept="image/*">
+                    <input type="text" id="c-input" placeholder="Type here..." autocomplete="off">
+                    <button id="send-btn"><i class="fas fa-paper-plane"></i></button>
+                </div>
             </div>
         </main>
 
-        <nav class="bottom-nav">
-            <div class="nav-item active" onclick="switchTab('voice')">
-                <i class="fas fa-microphone-alt"></i>
-                <span>VOICE</span>
-            </div>
-            <div class="nav-item" onclick="switchTab('chat')">
-                <i class="fas fa-comment-dots"></i>
-                <span>CHAT</span>
-            </div>
-            <div class="nav-spacer"></div>
-            <button id="mute-toggle" class="ctrl-btn"><i class="fas fa-microphone"></i></button>
-            <button id="leave-call" class="ctrl-btn red"><i class="fas fa-phone-slash"></i></button>
+        <nav class="footer">
+            <div class="nav-item active" onclick="tab('voice')"><i class="fas fa-microphone"></i><span>VOICE</span></div>
+            <div class="nav-item" onclick="tab('chat')"><i class="fas fa-comment"></i><span>CHAT</span></div>
+            <div class="divider"></div>
+            <button id="mute-btn" class="btn-ctrl"><i class="fas fa-microphone"></i></button>
+            <button id="leave-btn" class="btn-ctrl red"><i class="fas fa-phone-slash"></i></button>
         </nav>
     </div>
 

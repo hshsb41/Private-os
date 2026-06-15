@@ -1,99 +1,76 @@
-:root {
-    --bg: #000000;
-    --card: #0d0d0d;
-    --blue: #4f46e5;
-    --red: #ef4444;
-    --text: #ffffff;
-    --dim: #525252;
-}
-
 * { 
     margin: 0; padding: 0; box-sizing: border-box; 
-    font-family: 'Outfit', sans-serif; font-weight: 700;
+    font-family: sans-serif; font-weight: 900;
     border: none !important; outline: none !important;
-    -webkit-tap-highlight-color: transparent;
 }
 
 body { 
-    background: var(--bg); color: var(--text); 
-    height: 100vh; height: 100dvh; width: 100vw; 
-    overflow: hidden; position: fixed; 
+    background: #000; color: #fff; 
+    height: 100vh; height: 100dvh; 
+    width: 100vw; overflow: hidden; position: fixed; 
 }
 
 .hidden { display: none !important; }
 
-/* Join Page */
-.full-screen { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+/* Join Screen */
+.full-page { position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; z-index: 1000; }
 .join-box { width: 220px; text-align: center; }
-.avatar-setup { width: 85px; height: 85px; margin: 0 auto 25px; position: relative; }
-.avatar-setup img { width: 100%; height: 100%; border-radius: 24px; object-fit: cover; background: #111; }
-.cam-btn { position: absolute; bottom: -5px; right: -5px; background: var(--blue); width: 26px; height: 26px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+.avatar-circle { width: 80px; height: 80px; margin: 0 auto 20px; border-radius: 20px; overflow: hidden; }
+.avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
+#username { width: 100%; background: #111; padding: 12px; border-radius: 12px; color: #fff; text-align: center; margin-bottom: 12px; font-size: 14px; }
+#join-btn { width: 100%; background: #4f46e5; color: #fff; padding: 12px; border-radius: 12px; font-size: 12px; cursor: pointer; }
 
-#username { width: 100%; background: #111; padding: 14px; border-radius: 14px; color: #fff; text-align: center; margin-bottom: 15px; font-size: 14px; }
-#join-btn { width: 100%; background: var(--blue); color: #fff; padding: 14px; border-radius: 14px; font-weight: 900; font-size: 13px; cursor: pointer; }
-
-/* App Header - Logo Visibility Fix */
-.app-header { 
-    height: 75px; 
-    padding: 25px 15px 5px 15px; 
+/* Header - Logo Fix */
+.header { 
+    height: 70px; padding: 25px 15px 5px 15px; 
     display: flex; align-items: center; justify-content: space-between; 
-    background: rgba(0,0,0,0.8); flex-shrink: 0;
+    background: #080808; flex-shrink: 0;
     padding-top: max(25px, env(safe-area-inset-top)); 
 }
-.header-left { display: flex; align-items: center; }
-.header-logo { width: 42px; height: 42px; border-radius: 10px; object-fit: cover; margin-right: 12px; }
-.brand { font-size: 11px; color: var(--dim); display: block; letter-spacing: 1px; }
-#call-timer { font-size: 10px; color: #222; font-family: monospace; }
-.online-pill { font-size: 10px; color: #10b981; background: #000; padding: 5px 12px; border-radius: 20px; font-weight: 900; }
+.mini-logo { width: 38px; height: 38px; border-radius: 8px; object-fit: cover; margin-right: 12px; }
+.h-info b { font-size: 10px; color: #444; display: block; }
+#timer { font-size: 9px; color: #222; font-family: monospace; }
+.online-tag { font-size: 9px; color: #10b981; font-weight: 900; background: #000; padding: 4px 10px; border-radius: 20px; }
 
-/* Main Body */
-.app-body { flex: 1; position: relative; overflow: hidden; }
-.tab-view { position: absolute; inset: 0; overflow-y: auto; padding: 12px; -webkit-overflow-scrolling: touch; }
+/* Content Area */
+.content { flex: 1; position: relative; overflow: hidden; background: #000; }
+.view { position: absolute; inset: 0; overflow-y: auto; padding: 10px; padding-bottom: 100px; }
 
-/* Grid Layout */
-.grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.u-card { background: var(--card); aspect-ratio: 1/1.05; border-radius: 22px; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.3s; }
-.u-card.is-talking { box-shadow: inset 0 0 0 2px #10b981; }
-.u-card img { width: 50%; border-radius: 18px; margin-bottom: 10px; }
-.u-card span { font-size: 9px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; }
+/* Grid */
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.u-card { background: #0d0d0d; aspect-ratio: 1/1.05; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.u-card.talk { box-shadow: inset 0 0 0 1.5px #10b981; }
+.u-card img { width: 45%; border-radius: 12px; margin-bottom: 8px; }
+.u-card span { font-size: 9px; color: #444; text-transform: uppercase; }
 
-/* Chat Bubbles - Sano & Bold */
-.message-list { display: flex; flex-direction: column; gap: 10px; padding-bottom: 85px; }
-.msg { max-width: 85%; padding: 12px; border-radius: 18px; font-size: 13px; line-height: 1.4; position: relative; }
-.msg.me { align-self: flex-end; background: var(--blue); border-bottom-right-radius: 4px; }
-.msg.other { align-self: flex-start; background: #111; border-bottom-left-radius: 4px; }
-.msg-u { font-size: 9px; color: var(--dim); margin-bottom: 4px; display: block; }
-.msg img { width: 100%; border-radius: 12px; margin-top: 8px; display: block; }
+/* Chat List */
+.chat-messages { display: flex; flex-direction: column; gap: 8px; }
+.m-bubble { max-width: 85%; padding: 10px; border-radius: 12px; font-size: 13px; line-height: 1.4; }
+.m-bubble.me { align-self: flex-end; background: #4f46e5; }
+.m-bubble.other { align-self: flex-start; background: #111; }
+.m-name { font-size: 9px; color: #444; margin-bottom: 2px; display: block; }
+.m-bubble img { width: 100%; border-radius: 8px; margin-top: 5px; }
 
-/* Chat Input Bar - Typing Fix */
-.chat-input-bar { 
-    position: absolute; bottom: 15px; left: 12px; right: 12px; 
-    background: #111; padding: 5px 15px; border-radius: 20px; 
+/* Chat Bar - Fixed Visibility */
+.chat-bar { 
+    position: absolute; bottom: 10px; left: 10px; right: 10px; 
+    background: #181818; padding: 5px 12px; border-radius: 15px; 
     display: flex; align-items: center; z-index: 100;
 }
-.chat-input-bar input { 
-    flex: 1; background: transparent; color: #fff; padding: 12px; 
-    font-size: 16px; /* Prevents iPhone zoom */
-    -webkit-user-select: text; user-select: text;
-}
-.chat-icon { color: var(--dim); font-size: 20px; margin-right: 12px; }
-#send-btn { color: var(--blue); font-size: 20px; background: transparent; }
+.chat-bar input { flex: 1; background: transparent; color: #fff; padding: 10px; font-size: 16px; }
+.c-icon { color: #444; font-size: 18px; margin-right: 8px; cursor: pointer; }
+#send-btn { color: #4f46e5; font-size: 18px; background: transparent; padding: 5px; }
 
-/* Bottom Nav */
-.bottom-nav { 
-    height: 80px; background: #000; border-top: 1px solid #111 !important; 
+/* Footer */
+.footer { 
+    height: 75px; background: #000; border-top: 1px solid #111 !important; 
     display: flex; align-items: center; justify-content: space-around; 
     padding-bottom: env(safe-area-inset-bottom);
 }
-.nav-item { text-align: center; color: #262626; cursor: pointer; transition: 0.2s; }
+.nav-item { text-align: center; color: #222; }
 .nav-item.active { color: #fff; }
-.nav-item i { font-size: 20px; display: block; }
-.nav-item span { font-size: 9px; margin-top: 4px; display: block; }
-.nav-spacer { width: 1px; height: 30px; background: #111; }
-
-.ctrl-btn { width: 45px; height: 45px; border-radius: 15px; background: #0d0d0d; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; }
-.ctrl-btn.red { background: var(--red); }
-.ctrl-btn.muted { background: #fff; color: var(--red); }
-
-/* Desktop */
-@media (min-width: 600px) { .grid-layout { grid-template-columns: repeat(4, 1fr); } }
+.nav-item i { font-size: 18px; display: block; }
+.nav-item span { font-size: 8px; margin-top: 4px; display: block; }
+.btn-ctrl { width: 40px; height: 40px; border-radius: 12px; background: #0d0d0d; color: #fff; display: flex; align-items: center; justify-content: center; }
+.red { background: #ef4444; }
+.btn-ctrl.muted { background: #fff; color: #ef4444; }
