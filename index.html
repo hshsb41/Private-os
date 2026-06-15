@@ -2,96 +2,67 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- जूम हुन नदिन र मोबाइलमा फिट गर्नको लागि अनिवार्य मेटा ट्याग -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Global Voice | Premium Chat</title>
+    <title>Voice Chat</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Icons को लागि Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-
-    <!-- Notification / Toast Popup -->
-    <div id="toast-container"></div>
-
-    <!-- १. जोइन स्क्रिन (नाम र फोटो हाल्ने ठाउँ) -->
-    <div id="join-page" class="full-screen">
-        <div class="join-card">
-            <!-- यहाँ तपाईँको लोगो छ -->
-            <div class="avatar-selector" onclick="document.getElementById('avatar-input').click()">
-                <img id="login-preview" src="https://i.ibb.co/Y4KjTgvP/Picsart-26-02-07-02-21-57-621.jpg">
-                <div class="cam-icon"><i class="fas fa-camera"></i></div>
+    <!-- Join Screen -->
+    <div id="join-screen" class="screen">
+        <div class="join-wrap">
+            <div class="avatar-box" onclick="document.getElementById('avatar-input').click()">
+                <img id="preview" src="https://i.ibb.co/Y4KjTgvP/Picsart-26-02-07-02-21-57-621.jpg">
+                <input type="file" id="avatar-input" hidden accept="image/*">
             </div>
-            <input type="file" id="avatar-input" hidden accept="image/*">
-            
-            <input type="text" id="username" placeholder="ENTER NAME" maxlength="10" autocomplete="off">
+            <input type="text" id="username" placeholder="Name" maxlength="10" autocomplete="off">
             <button id="join-btn">JOIN CALL</button>
         </div>
     </div>
 
-    <!-- २. मुख्य एप्लिकेसन स्क्रिन -->
-    <div id="app-page" class="app-wrapper hidden">
-        
-        <!-- माथिको पट्टी (Header) - जहाँ लोगो अब प्रस्ट देखिनेछ -->
-        <header class="app-header">
-            <div class="header-left">
-                <img src="https://i.ibb.co/Y4KjTgvP/Picsart-26-02-07-02-21-57-621.jpg" class="header-logo">
-                <div class="header-info">
-                    <b class="brand-name">GLOBAL VOICE</b>
-                    <span id="call-timer">00:00</span>
+    <!-- Main App Screen -->
+    <div id="app-screen" class="screen hidden">
+        <header class="header">
+            <div class="h-left">
+                <!-- लोगो यहाँ छ, अब यो काटिने छैन -->
+                <img src="https://i.ibb.co/Y4KjTgvP/Picsart-26-02-07-02-21-57-621.jpg" class="mini-logo">
+                <div class="h-text">
+                    <b>GLOBAL VOICE</b>
+                    <span id="timer">00:00</span>
                 </div>
             </div>
-            <div class="header-right">
-                <div class="status-pill">LIVE: <span id="online-count">1</span></div>
-            </div>
+            <div class="online-pill">LIVE: <span id="count">1</span></div>
         </header>
 
-        <!-- बीचको भाग (Voice Grid र Chat List) -->
-        <main class="app-content">
-            <!-- भोइस सेक्सन -->
-            <div id="voice-view" class="tab-view">
-                <div id="user-grid" class="user-grid">
-                    <!-- यहाँ मान्छेहरूको भोइस कार्ड देखिनेछ -->
-                </div>
+        <div class="main-container">
+            <!-- Voice View -->
+            <div id="voice-view" class="view">
+                <div id="user-grid" class="grid"></div>
             </div>
 
-            <!-- च्याट सेक्सन -->
-            <div id="chat-view" class="tab-view hidden">
-                <div id="message-container" class="message-list">
-                    <!-- म्यासेजहरू यहाँ आउनेछन् -->
+            <!-- Chat View -->
+            <div id="chat-view" class="view hidden">
+                <div id="chat-box" class="chat-list"></div>
+                <div class="chat-bar">
+                    <label for="c-img" class="bar-icon"><i class="fas fa-image"></i></label>
+                    <input type="file" id="c-img" hidden accept="image/*">
+                    <input type="text" id="c-input" placeholder="Message..." autocomplete="off">
+                    <button id="send-btn"><i class="fas fa-paper-plane"></i></button>
                 </div>
-                <!-- च्याट टाइप गर्ने ठाउँ -->
-                <form id="chat-form" class="chat-bar">
-                    <label for="chat-image-input" class="bar-btn"><i class="fas fa-image"></i></label>
-                    <input type="file" id="chat-image-input" hidden accept="image/*">
-                    <input type="text" id="chat-text-input" placeholder="Type here..." autocomplete="off">
-                    <button type="submit" id="msg-send-btn"><i class="fas fa-paper-plane"></i></button>
-                </form>
             </div>
-        </main>
+        </div>
 
-        <!-- तल्लो मेनु (Navigation Bar) -->
-        <nav class="bottom-nav">
-            <div class="nav-tab active" id="btn-voice" onclick="changeTab('voice')">
-                <i class="fas fa-microphone-alt"></i>
-                <span>VOICE</span>
-            </div>
-            <div class="nav-tab" id="btn-chat" onclick="changeTab('chat')">
-                <i class="fas fa-comment-dots"></i>
-                <span>CHAT</span>
-            </div>
-            <div class="nav-spacer"></div>
-            <!-- कन्ट्रोल बटनहरू (Mute र Leave) -->
-            <button id="mute-toggle" class="action-btn"><i class="fas fa-microphone"></i></button>
-            <button id="leave-call" class="action-btn exit-red"><i class="fas fa-phone-slash"></i></button>
+        <!-- Navigation Bar -->
+        <nav class="footer-nav">
+            <div class="nav-btn active" onclick="tab('voice')"><i class="fas fa-microphone-alt"></i><span>Voice</span></div>
+            <div class="nav-btn" onclick="tab('chat')"><i class="fas fa-comment-alt"></i><span>Chat</span></div>
+            <button id="mute-btn" class="ctrl-b"><i class="fas fa-microphone"></i></button>
+            <button id="leave-btn" class="ctrl-b red"><i class="fas fa-phone-slash"></i></button>
         </nav>
-
     </div>
 
-    <!-- लुकेको अडियो कन्टेनर (अवाज सुन्नको लागि) -->
-    <div id="audio-streams" style="display:none"></div>
+    <div id="audio-dump"></div>
 
-    <!-- Scripts -->
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://unpkg.com/simple-peer@9.11.1/simplepeer.min.js"></script>
     <script src="script.js"></script>
