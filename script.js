@@ -2,138 +2,141 @@ const socket = io();
 let localStream, myName = "", myAvatar = "https://i.ibb.co/Y4KjTgvP/Picsart-26-02-07-02-21-57-621.jpg";
 let peers = {};
 
-const config = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }] };
+const ice = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
+// Preview Image
 document.getElementById('avatar-input').onchange = (e) => {
-    const reader = new FileReader();
-    reader.onload = () => { myAvatar = reader.result; document.getElementById('preview').src = myAvatar; };
-    reader.readAsDataURL(e.target.files[0]);
+    const r = new FileReader();
+    r.onload = () => { myAvatar = r.result; document.getElementById('preview').src = r.result; };
+    r.readAsDataURL(e.target.files[0]);
 };
 
+// Join
 document.getElementById('join-btn').onclick = async () => {
     myName = document.getElementById('username').value.trim();
     if (!myName) return;
     try {
         localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        document.getElementById('join-screen').classList.add('hidden');
-        document.getElementById('app-screen').classList.remove('hidden');
+        document.getElementById('join-page').classList.add('hidden');
+        document.getElementById('app-page').classList.remove('hidden');
         socket.emit('join', { name: myName, avatar: myAvatar });
-        addUI('me', myName, myAvatar, true);
-        initTimer();
-        micCheck();
+        addCard('me', myName, myAvatar, true);
+        startTimer();
+        voiceCheck();
     } catch (e) { alert("Mic required"); }
 };
 
-// अहिले भएका युजरहरूसँग कनेक्ट गर्ने
 socket.on('users', list => {
     list.forEach(u => {
-        const p = startPeer(u.id, true);
+        const p = createPeer(u.id, true);
         peers[u.id] = { p, name: u.name, avatar: u.avatar };
-        addUI(u.id, u.name, u.avatar);
+        addCard(u.id, u.name, u.avatar);
     });
-    count();
+    updateCount();
 });
 
-// नयाँ कोही आउँदा कनेक्ट गर्ने
-socket.on('user-connected', u => {
-    const p = startPeer(u.id, false);
-    peers[u.id] = { p, name: u.name, avatar: u.avatar };
-    addUI(u.id, u.name, u.avatar);
-    count();
-});
-
-socket.on('signal', data => {
-    if (peers[data.from]) peers[data.from].p.signal(data.sig);
+socket.on('signal', d => {
+    if (d.sig && peers[d.from]) peers[d.from].p.signal(d.sig);
+    else if (d.sig && !peers[d.from]) {
+        const p = createPeer(d.from, false, d.sig);
+        peers[d.from] = { p, name: d.name, avatar: d.avatar };
+        addCard(d.from, d.name, d.avatar);
+        updateCount();
+    }
 });
 
 socket.on('left', id => {
     if(peers[id]) { peers[id].p.destroy(); delete peers[id]; }
     document.getElementById(`card-${id}`)?.remove();
-    count();
+    updateCount();
 });
 
-function startPeer(id, init) {
-    const p = new SimplePeer({ initiator: init, trickle: false, config, stream: localStream });
-    p.on('signal', s => socket.emit('signal', { to: id, sig: s }));
+function createPeer(id, init, sig = null) {
+    const p = new SimplePeer({ initiator: init, trickle: false, config: ice, stream: localStream });
+    p.on('signal', s => socket.emit('signal', { to: id, sig: s, name: myName, avatar: myAvatar }));
     p.on('stream', s => {
-        let a = document.createElement('audio');
-        a.srcObject = s; a.autoplay = true;
+        let a = document.createElement('audio'); a.srcObject = s; a.autoplay = true;
         document.getElementById('audio-dump').appendChild(a);
     });
+    if(sig) p.signal(sig);
     return p;
 }
 
-// Chat Logic (Fixed for fast UI)
-const inp = document.getElementById('c-input');
-const send = (t = "", i = null) => {
-    if (!t && !i) return;
-    socket.emit('msg', { t, i, name: myName });
-    inp.value = "";
+// Messaging (Fixed Typing)
+const chatForm = document.getElementById('chat-form');
+const chatInput = document.getElementById('c-input');
+
+chatForm.onsubmit = (e) => {
+    e.preventDefault();
+    const txt = chatInput.value.trim();
+    if (txt) {
+        socket.emit('msg', { t: txt, i: null, name: myName });
+        chatInput.value = "";
+    }
 };
-document.getElementById('send-btn').onclick = () => send(inp.value);
-inp.onkeypress = (e) => e.key === 'Enter' && send(inp.value);
+
 document.getElementById('c-img').onchange = (e) => {
     const r = new FileReader();
-    r.onload = () => send("", r.result);
+    r.onload = () => socket.emit('msg', { t: "", i: r.result, name: myName });
     r.readAsDataURL(e.target.files[0]);
 };
 
 socket.on('msg', d => {
-    const b = document.getElementById('chat-box');
+    const box = document.getElementById('chat-messages');
     const isMe = d.name === myName;
     const div = document.createElement('div');
     div.className = `m-bubble ${isMe ? 'me' : 'other'}`;
     div.innerHTML = `<span class="m-name">${d.name}</span>${d.t ? `<div>${d.t}</div>` : ''}${d.i ? `<img src="${d.i}">` : ''}`;
-    b.appendChild(div);
-    b.scrollTop = b.scrollHeight;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
 });
 
-function addUI(id, n, a, isMe = false) {
+function switchTab(t) {
+    document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById(`${t}-view`).classList.remove('hidden');
+    document.getElementById(`tab-${t}`).classList.add('active');
+}
+
+function addCard(id, n, a, isMe = false) {
     if(document.getElementById(`card-${id}`)) return;
-    const g = document.getElementById('user-grid');
+    const grid = document.getElementById('user-grid');
     const d = document.createElement('div');
     d.className = 'u-card'; d.id = `card-${id}`;
-    d.innerHTML = `<img src="${a}"><span>${isMe ? 'You' : n}</span>`;
-    g.appendChild(d);
+    d.innerHTML = `<img src="${a}"><span>${isMe ? 'YOU' : n}</span>`;
+    grid.appendChild(d);
 }
 
-function tab(t) {
-    document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
-    document.querySelectorAll('.nav-btn').forEach(i => i.classList.remove('active'));
-    document.getElementById(`${t}-view`).classList.remove('hidden');
-    event.currentTarget.classList.add('active');
-}
+function updateCount() { document.getElementById('count').innerText = Object.keys(peers).length + 1; }
 
-function count() { document.getElementById('count').innerText = Object.keys(peers).length + 1; }
-
-function micCheck() {
+function voiceCheck() {
     const ctx = new AudioContext(), ana = ctx.createAnalyser();
     ctx.createMediaStreamSource(localStream).connect(ana);
     const data = new Uint8Array(ana.frequencyBinCount);
-    const check = () => {
+    const run = () => {
         ana.getByteFrequencyData(data);
         const talk = (data.reduce((a,b)=>a+b)/data.length) > 15;
         socket.emit('talk', talk);
         const el = document.getElementById('card-me');
-        if(el) talk ? el.classList.add('talk') : el.classList.remove('talk');
-        requestAnimationFrame(check);
+        if(el) talk ? el.classList.add('active-talk') : el.classList.remove('active-talk');
+        requestAnimationFrame(run);
     };
-    check();
+    run();
 }
 
 socket.on('talk', d => {
     const el = document.getElementById(`card-${d.id}`);
-    if(el) d.talk ? el.classList.add('talk') : el.classList.remove('talk');
+    if(el) d.talk ? el.classList.add('active-talk') : el.classList.remove('active-talk');
 });
 
 document.getElementById('mute-btn').onclick = function() {
     const act = localStream.getAudioTracks()[0].enabled;
     localStream.getAudioTracks()[0].enabled = !act;
     this.classList.toggle('muted');
-    this.innerHTML = act ? '<i class="fas fa-microphone"></i>' : '<i class="fas fa-microphone-slash"></i>';
+    this.innerHTML = act ? '<i class="fas fa-microphone-slash"></i>' : '<i class="fas fa-microphone"></i>';
 };
 
-function initTimer() {
+function startTimer() {
     let s = 0; setInterval(() => {
         s++; let m = Math.floor(s/60).toString().padStart(2,'0'), sec = (s%60).toString().padStart(2,'0');
         document.getElementById('timer').innerText = `${m}:${sec}`;
