@@ -3,77 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Global Voice | Premium</title>
+    <title>Global Voice & Chat</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div id="toast-container"></div>
 
-    <!-- Join Screen -->
-    <div id="join-screen" class="screen-overlay">
-        <div class="login-container">
-            <div class="avatar-setup" onclick="document.getElementById('avatar-input').click()">
-                <img id="avatar-preview" src="https://i.ibb.co/Y4KjTgvP/Picsart-26-02-07-02-21-57-621.jpg">
-                <div class="cam-overlay"><i class="fas fa-camera"></i></div>
+    <!-- Screen 1: Login & Avatar -->
+    <div id="join-screen" class="overlay">
+        <div class="join-card">
+            <div class="avatar-upload" onclick="document.getElementById('avatar-input').click()">
+                <img id="avatar-preview" src="https://www.pngall.com/wp-content/uploads/5/User-Profile-PNG.png">
+                <div class="edit-icon"><i class="fas fa-camera"></i></div>
             </div>
             <input type="file" id="avatar-input" hidden accept="image/*">
-            <input type="text" id="username" placeholder="Full Name" maxlength="12">
-            <button id="join-btn">START EXPERIENCE</button>
+            <input type="text" id="username" placeholder="Enter Name" maxlength="12">
+            <button id="join-btn">START CALL</button>
         </div>
     </div>
 
-    <!-- Main App -->
+    <!-- Screen 2: Main App -->
     <div id="main-app" class="hidden">
-        <header class="app-bar">
-            <div class="bar-left">
-                <img src="https://i.ibb.co/Y4KjTgvP/Picsart-26-02-07-02-21-57-621.jpg" class="mini-logo">
-                <div class="bar-title">
-                    <h4>GLOBAL VOICE</h4>
-                    <span id="call-timer">00:00</span>
+        <header class="app-header">
+            <div class="room-info">
+                <img src="https://i.ibb.co/Y4KjTgvP/Picsart-26-02-07-02-21-57-621.jpg" class="logo-mini">
+                <div>
+                    <p class="room-name">GLOBAL VOICE</p>
+                    <p id="call-timer">00:00</p>
                 </div>
             </div>
-            <div class="online-pill">
-                <i class="fas fa-circle"></i> <span id="user-count">1</span>
-            </div>
+            <div class="online-pill"><span id="user-count">1</span> Online</div>
         </header>
 
-        <main class="content-area">
-            <!-- Voice View -->
-            <div id="voice-view" class="tab-view">
-                <div id="user-grid" class="voice-grid"></div>
-            </div>
+        <!-- Tab Content: Voice -->
+        <div id="voice-section" class="tab-content">
+            <div id="user-grid" class="user-grid"></div>
+        </div>
 
-            <!-- Chat View -->
-            <div id="chat-view" class="tab-view hidden">
-                <div id="chat-messages" class="message-list"></div>
-                <div class="chat-input-area">
-                    <label for="chat-img" class="action-icon"><i class="fas fa-plus"></i></label>
-                    <input type="file" id="chat-img" hidden accept="image/*">
-                    <input type="text" id="chat-input" placeholder="Message...">
-                    <button id="send-btn"><i class="fas fa-location-arrow"></i></button>
-                </div>
+        <!-- Tab Content: Chat -->
+        <div id="chat-section" class="tab-content hidden">
+            <div id="chat-messages" class="chat-area"></div>
+            <div class="chat-input-bar">
+                <label for="chat-img" class="img-btn"><i class="fas fa-image"></i></label>
+                <input type="file" id="chat-img" hidden accept="image/*">
+                <input type="text" id="chat-msg-input" placeholder="Type message...">
+                <button id="send-msg-btn"><i class="fas fa-paper-plane"></i></button>
             </div>
-        </main>
+        </div>
 
-        <!-- Navigation Bar -->
-        <nav class="bottom-menu">
-            <div class="menu-item active" onclick="showTab('voice')">
-                <i class="fas fa-waveform"></i>
+        <!-- Fixed Bottom Navigation -->
+        <nav class="bottom-nav">
+            <div class="nav-item active" onclick="switchTab('voice')">
+                <i class="fas fa-microphone"></i>
                 <span>Voice</span>
             </div>
-            <div class="menu-item" onclick="showTab('chat')">
-                <i class="fas fa-comment-alt"></i>
+            <div class="nav-item" onclick="switchTab('chat')">
+                <i class="fas fa-comment-dots"></i>
                 <span>Chat</span>
             </div>
-            <div class="v-divider"></div>
-            <button id="mute-btn" class="ctrl-icon"><i class="fas fa-microphone"></i></button>
-            <button id="leave-btn" class="ctrl-icon red"><i class="fas fa-phone-slash"></i></button>
+            <div class="nav-sep"></div>
+            <button id="mute-btn" class="nav-ctrl"><i class="fas fa-microphone"></i></button>
+            <button id="leave-btn" class="nav-ctrl red"><i class="fas fa-phone-slash"></i></button>
         </nav>
     </div>
 
-    <div id="audio-dump"></div>
+    <div id="audio-container"></div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://unpkg.com/simple-peer@9.11.1/simplepeer.min.js"></script>
