@@ -2,7 +2,7 @@ const socket = io();
 let localStream, myName = "", myAvatar = "https://i.ibb.co/Y4KjTgvP/Picsart-26-02-07-02-21-57-621.jpg";
 let peers = {};
 
-const config = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+const config = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }] };
 
 document.getElementById('avatar-input').onchange = (e) => {
     const reader = new FileReader();
@@ -21,9 +21,10 @@ document.getElementById('join-btn').onclick = async () => {
         addUI('me', myName, myAvatar, true);
         initTimer();
         micCheck();
-    } catch (e) { alert("Enable Mic"); }
+    } catch (e) { alert("Mic required"); }
 };
 
+// अहिले भएका युजरहरूसँग कनेक्ट गर्ने
 socket.on('users', list => {
     list.forEach(u => {
         const p = startPeer(u.id, true);
@@ -33,17 +34,16 @@ socket.on('users', list => {
     count();
 });
 
+// नयाँ कोही आउँदा कनेक्ट गर्ने
+socket.on('user-connected', u => {
+    const p = startPeer(u.id, false);
+    peers[u.id] = { p, name: u.name, avatar: u.avatar };
+    addUI(u.id, u.name, u.avatar);
+    count();
+});
+
 socket.on('signal', data => {
-    if (data.sig) {
-        if (!peers[data.from]) {
-            const p = startPeer(data.from, false, data.sig);
-            peers[data.from] = { p, name: data.name, avatar: data.avatar };
-            addUI(data.from, data.name, data.avatar);
-            count();
-        } else {
-            peers[data.from].p.signal(data.sig);
-        }
-    }
+    if (peers[data.from]) peers[data.from].p.signal(data.sig);
 });
 
 socket.on('left', id => {
@@ -52,19 +52,18 @@ socket.on('left', id => {
     count();
 });
 
-function startPeer(id, init, sig = null) {
+function startPeer(id, init) {
     const p = new SimplePeer({ initiator: init, trickle: false, config, stream: localStream });
-    p.on('signal', s => socket.emit('signal', { to: id, sig: s, name: myName, avatar: myAvatar }));
+    p.on('signal', s => socket.emit('signal', { to: id, sig: s }));
     p.on('stream', s => {
         let a = document.createElement('audio');
         a.srcObject = s; a.autoplay = true;
         document.getElementById('audio-dump').appendChild(a);
     });
-    if (sig) p.signal(sig);
     return p;
 }
 
-// Chat
+// Chat Logic (Fixed for fast UI)
 const inp = document.getElementById('c-input');
 const send = (t = "", i = null) => {
     if (!t && !i) return;
@@ -131,7 +130,7 @@ document.getElementById('mute-btn').onclick = function() {
     const act = localStream.getAudioTracks()[0].enabled;
     localStream.getAudioTracks()[0].enabled = !act;
     this.classList.toggle('muted');
-    this.innerHTML = act ? '<i class="fas fa-microphone-slash"></i>' : '<i class="fas fa-microphone"></i>';
+    this.innerHTML = act ? '<i class="fas fa-microphone"></i>' : '<i class="fas fa-microphone-slash"></i>';
 };
 
 function initTimer() {

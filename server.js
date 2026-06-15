@@ -11,14 +11,19 @@ app.use(express.static(__dirname));
 const users = {};
 let chats = [];
 
-setInterval(() => {
-    const now = Date.now();
-    chats = chats.filter(c => now - c.time < 3600000);
-}, 60000);
-
 io.on('connection', (socket) => {
     socket.on('join', (data) => {
+        // युजरको डाटा सर्भरमा सेभ गर्ने
         users[socket.id] = { name: data.name, avatar: data.avatar };
+        
+        // अरूलाई नयाँ युजर आएको जानकारी दिने
+        socket.broadcast.emit('user-connected', {
+            id: socket.id,
+            name: data.name,
+            avatar: data.avatar
+        });
+
+        // नयाँ युजरलाई अहिले भएका सबैको लिष्ट र पुराना च्याट पठाउने
         chats.forEach(c => socket.emit('msg', c));
         const list = Object.keys(users)
             .filter(id => id !== socket.id)
@@ -27,7 +32,8 @@ io.on('connection', (socket) => {
     });
 
     socket.on('signal', d => {
-        io.to(d.to).emit('signal', { sig: d.sig, from: socket.id, name: d.name, avatar: d.avatar });
+        // सिग्नलमा अब फोटो पठाइँदैन (यसले गर्दा जोइन छिटो हुन्छ)
+        io.to(d.to).emit('signal', { sig: d.sig, from: socket.id });
     });
 
     socket.on('msg', d => {
