@@ -2,8 +2,16 @@ const socket = io();
 let localStream, myName = "", myAvatar = "https://www.pngall.com/wp-content/uploads/5/User-Profile-PNG.png";
 let peers = {};
 
-// Handle Avatar Upload Preview
-document.getElementById('avatar-input').onchange = function(e) {
+// Google STUN Servers (कल जोड्नको लागि अनिवार्य)
+const iceConfig = {
+    iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' }
+    ]
+};
+
+// Avatar Preview
+document.getElementById('avatar-input').onchange = (e) => {
     const reader = new FileReader();
     reader.onload = () => {
         myAvatar = reader.result;
@@ -12,7 +20,7 @@ document.getElementById('avatar-input').onchange = function(e) {
     reader.readAsDataURL(e.target.files[0]);
 };
 
-// Join Call
+// Join Room
 document.getElementById('join-btn').onclick = async () => {
     myName = document.getElementById('username').value.trim();
     if (!myName) return;
@@ -26,13 +34,14 @@ document.getElementById('join-btn').onclick = async () => {
         addCard('me', myName, myAvatar, true);
         startTimer();
         monitorVoice(localStream);
-    } catch (e) { alert("Mic Access Required"); }
+    } catch (e) {
+        alert("Please enable Microphone access!");
+    }
 };
 
-// Socket Events
 socket.on('all-participants', users => {
     users.forEach(u => {
-        const peer = connectPeer(u.socketId, true);
+        const peer = createPeer(u.socketId, socket.id, localStream);
         peers[u.socketId] = { peer, name: u.username, avatar: u.avatar };
         addCard(u.socketId, u.username, u.avatar);
     });
@@ -40,75 +49,104 @@ socket.on('all-participants', users => {
 });
 
 socket.on('user-joined', data => {
-    const peer = connectPeer(data.callerID, false, data.signal);
+    const peer = addPeer(data.signal, data.callerID, localStream);
     peers[data.callerID] = { peer, name: data.username, avatar: data.avatar };
     addCard(data.callerID, data.username, data.avatar);
     updateCount();
 });
 
-socket.on('receiving-returned-signal', d => peers[d.id].peer.signal(d.signal));
+socket.on('receiving-returned-signal', d => {
+    if(peers[d.id]) peers[d.id].peer.signal(d.signal);
+});
 
 socket.on('user-left', id => {
-    if(peers[id]) { peers[id].peer.destroy(); delete peers[id]; }
+    if(peers[id]) {
+        peers[id].peer.destroy();
+        delete peers[id];
+    }
     document.getElementById(`card-${id}`)?.remove();
     updateCount();
 });
 
-// Chat Logic
-const msgInput = document.getElementById('chat-msg-input');
-const sendBtn = document.getElementById('send-msg-btn');
-const chatImg = document.getElementById('chat-img');
-
-function sendMsg(text = "", img = null) {
-    if (!text && !img) return;
-    socket.emit('send-msg', { text, img, name: myName });
-    msgInput.value = "";
+// Peer Functions
+function createPeer(userToSignal, callerID, stream) {
+    const peer = new SimplePeer({
+        initiator: true,
+        trickle: false,
+        config: iceConfig,
+        stream
+    });
+    peer.on('signal', signal => {
+        socket.emit('sending-signal', { userToSignal, callerID, signal, username: myName, avatar: myAvatar });
+    });
+    peer.on('stream', s => playRemote(s, userToSignal));
+    return peer;
 }
 
-sendBtn.onclick = () => sendMsg(msgInput.value);
-msgInput.onkeypress = (e) => { if(e.key === 'Enter') sendMsg(msgInput.value); };
+function addPeer(incomingSignal, callerID, stream) {
+    const peer = new SimplePeer({
+        initiator: false,
+        trickle: false,
+        config: iceConfig,
+        stream
+    });
+    peer.on('signal', signal => {
+        socket.emit('returning-signal', { signal, callerID });
+    });
+    peer.on('stream', s => playRemote(s, callerID));
+    peer.signal(incomingSignal);
+    return peer;
+}
+
+function playRemote(stream, id) {
+    let a = document.getElementById(`audio-${id}`);
+    if(!a) {
+        a = document.createElement('audio');
+        a.id = `audio-${id}`;
+        a.autoplay = true;
+        document.getElementById('audio-container').appendChild(a);
+    }
+    a.srcObject = stream;
+}
+
+// Messaging Logic (Fixed)
+const msgInput = document.getElementById('chat-msg-input');
+const chatImg = document.getElementById('chat-img');
+
+document.getElementById('send-msg-btn').onclick = () => {
+    if(msgInput.value.trim()) {
+        socket.emit('send-msg', { text: msgInput.value, img: null, name: myName });
+        msgInput.value = "";
+    }
+};
 
 chatImg.onchange = (e) => {
     const reader = new FileReader();
-    reader.onload = () => sendMsg("", reader.result);
+    reader.onload = () => socket.emit('send-msg', { text: "", img: reader.result, name: myName });
     reader.readAsDataURL(e.target.files[0]);
 };
 
 socket.on('new-msg', data => {
     const area = document.getElementById('chat-messages');
-    const div = document.createElement('div');
     const isMe = data.name === myName;
+    const div = document.createElement('div');
     div.className = `msg ${isMe ? 'me' : 'other'}`;
     div.innerHTML = `
-        <span class="u">${isMe ? 'You' : data.name}</span>
+        <span class="u">${data.name}</span>
         ${data.text ? `<div>${data.text}</div>` : ''}
-        ${data.img ? `<img src="${data.img}">` : ''}
+        ${data.img ? `<img src="${data.img}" style="max-width:200px; border-radius:10px;">` : ''}
     `;
     area.appendChild(div);
     area.scrollTop = area.scrollHeight;
 });
 
-// WebRTC & UI Helpers
-function connectPeer(target, isInit, sig = null) {
-    const p = new SimplePeer({ initiator: isInit, trickle: false, stream: localStream });
-    p.on('signal', s => {
-        if(isInit) socket.emit('sending-signal', { userToSignal: target, callerID: socket.id, signal: s, username: myName, avatar: myAvatar });
-        else socket.emit('returning-signal', { signal: s, callerID: target });
-    });
-    p.on('stream', s => {
-        let a = document.createElement('audio');
-        a.srcObject = s; a.autoplay = true;
-        document.getElementById('audio-container').appendChild(a);
-    });
-    if(sig) p.signal(sig);
-    return p;
-}
-
+// UI & Voice Helpers
 function addCard(id, name, avatar, isMe = false) {
+    if(document.getElementById(`card-${id}`)) return;
     const grid = document.getElementById('user-grid');
     const div = document.createElement('div');
     div.className = 'u-card'; div.id = `card-${id}`;
-    div.innerHTML = `<img src="${avatar}"><p>${isMe ? 'YOU' : name.toUpperCase()}</p>`;
+    div.innerHTML = `<img src="${avatar}"><p>${isMe ? 'YOU' : name}</p>`;
     grid.appendChild(div);
 }
 
@@ -119,7 +157,9 @@ function switchTab(tab) {
     event.currentTarget.classList.add('active');
 }
 
-function updateCount() { document.getElementById('user-count').innerText = Object.keys(peers).length + 1; }
+function updateCount() {
+    document.getElementById('user-count').innerText = Object.keys(peers).length + 1;
+}
 
 function monitorVoice(stream) {
     const ctx = new AudioContext(), ana = ctx.createAnalyser();
