@@ -3,55 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Voice Chat</title>
+    <title>Voice Chat Pro</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div id="join-screen" class="screen">
-        <div class="join-wrap">
-            <div class="avatar-box" onclick="document.getElementById('avatar-input').click()">
+    <!-- Join Page -->
+    <div id="join-page" class="page-overlay">
+        <div class="join-content">
+            <div class="avatar-pick" onclick="document.getElementById('avatar-input').click()">
                 <img id="preview" src="https://i.ibb.co/Y4KjTgvP/Picsart-26-02-07-02-21-57-621.jpg">
                 <input type="file" id="avatar-input" hidden accept="image/*">
             </div>
-            <input type="text" id="username" placeholder="Name" maxlength="10" autocomplete="off">
+            <input type="text" id="username" placeholder="NAME" maxlength="10">
             <button id="join-btn">JOIN CALL</button>
         </div>
     </div>
 
-    <div id="app-screen" class="screen hidden">
+    <!-- App Page -->
+    <div id="app-page" class="app-container hidden">
         <header class="header">
-            <img src="https://i.ibb.co/Y4KjTgvP/Picsart-26-02-07-02-21-57-621.jpg" class="mini-logo">
-            <div class="h-text">
-                <b>GLOBAL VOICE</b>
-                <span id="timer">00:00</span>
+            <div class="h-left">
+                <img src="https://i.ibb.co/Y4KjTgvP/Picsart-26-02-07-02-21-57-621.jpg" class="mini-logo">
+                <div class="h-info">
+                    <b>GLOBAL VOICE</b>
+                    <span id="timer">00:00</span>
+                </div>
             </div>
-            <div class="online-pill"><span id="count">1</span> ONLINE</div>
+            <div class="online-pill">LIVE: <span id="count">1</span></div>
         </header>
 
-        <div class="main-container">
+        <main class="content">
+            <!-- Voice Section -->
             <div id="voice-view" class="view">
                 <div id="user-grid" class="grid"></div>
             </div>
-            <div id="chat-view" class="view hidden">
-                <div id="chat-box" class="chat-list"></div>
-                <div class="chat-bar">
-                    <label for="c-img" class="bar-icon"><i class="fas fa-image"></i></label>
-                    <input type="file" id="c-img" hidden accept="image/*">
-                    <input type="text" id="c-input" placeholder="Message..." autocomplete="off">
-                    <button id="send-btn"><i class="fas fa-paper-plane"></i></button>
-                </div>
-            </div>
-        </div>
 
-        <nav class="footer-nav">
-            <div class="nav-btn active" onclick="tab('voice')"><i class="fas fa-microphone-alt"></i><span>Voice</span></div>
-            <div class="nav-btn" onclick="tab('chat')"><i class="fas fa-comment-alt"></i><span>Chat</span></div>
-            <button id="mute-btn" class="ctrl-b"><i class="fas fa-microphone"></i></button>
-            <button id="leave-btn" class="ctrl-b red"><i class="fas fa-phone-slash"></i></button>
+            <!-- Chat Section -->
+            <div id="chat-view" class="view hidden">
+                <div id="chat-messages" class="chat-list"></div>
+                <form id="chat-form" class="chat-bar">
+                    <label for="c-img" class="icon-btn"><i class="fas fa-image"></i></label>
+                    <input type="file" id="c-img" hidden accept="image/*">
+                    <input type="text" id="c-input" placeholder="Type here..." autocomplete="off">
+                    <button type="submit" id="send-btn"><i class="fas fa-paper-plane"></i></button>
+                </form>
+            </div>
+        </main>
+
+        <nav class="nav">
+            <div class="nav-item active" id="tab-voice" onclick="switchTab('voice')">
+                <i class="fas fa-microphone-alt"></i>
+                <span>VOICE</span>
+            </div>
+            <div class="nav-item" id="tab-chat" onclick="switchTab('chat')">
+                <i class="fas fa-comment-dots"></i>
+                <span>CHAT</span>
+            </div>
+            <div class="nav-div"></div>
+            <button id="mute-btn" class="ctrl-btn"><i class="fas fa-microphone"></i></button>
+            <button id="leave-btn" class="ctrl-btn red"><i class="fas fa-phone-slash"></i></button>
         </nav>
     </div>
+
     <div id="audio-dump"></div>
+
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://unpkg.com/simple-peer@9.11.1/simplepeer.min.js"></script>
     <script src="script.js"></script>
