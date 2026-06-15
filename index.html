@@ -8,23 +8,24 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <!-- Join Screen -->
+    <div id="audio-dump"></div>
+
+    <!-- Screen 1: Join -->
     <div id="join-screen" class="screen">
         <div class="join-wrap">
             <div class="avatar-box" onclick="document.getElementById('avatar-input').click()">
                 <img id="preview" src="https://i.ibb.co/Y4KjTgvP/Picsart-26-02-07-02-21-57-621.jpg">
                 <input type="file" id="avatar-input" hidden accept="image/*">
             </div>
-            <input type="text" id="username" placeholder="Name" maxlength="10" autocomplete="off">
+            <input type="text" id="username" placeholder="NAME" maxlength="10" autocomplete="off">
             <button id="join-btn">JOIN CALL</button>
         </div>
     </div>
 
-    <!-- Main App Screen -->
+    <!-- Screen 2: App -->
     <div id="app-screen" class="screen hidden">
         <header class="header">
             <div class="h-left">
-                <!-- लोगो यहाँ छ, अब यो काटिने छैन -->
                 <img src="https://i.ibb.co/Y4KjTgvP/Picsart-26-02-07-02-21-57-621.jpg" class="mini-logo">
                 <div class="h-text">
                     <b>GLOBAL VOICE</b>
@@ -35,12 +36,9 @@
         </header>
 
         <div class="main-container">
-            <!-- Voice View -->
             <div id="voice-view" class="view">
                 <div id="user-grid" class="grid"></div>
             </div>
-
-            <!-- Chat View -->
             <div id="chat-view" class="view hidden">
                 <div id="chat-box" class="chat-list"></div>
                 <div class="chat-bar">
@@ -52,7 +50,6 @@
             </div>
         </div>
 
-        <!-- Navigation Bar -->
         <nav class="footer-nav">
             <div class="nav-btn active" onclick="tab('voice')"><i class="fas fa-microphone-alt"></i><span>Voice</span></div>
             <div class="nav-btn" onclick="tab('chat')"><i class="fas fa-comment-alt"></i><span>Chat</span></div>
@@ -60,8 +57,6 @@
             <button id="leave-btn" class="ctrl-b red"><i class="fas fa-phone-slash"></i></button>
         </nav>
     </div>
-
-    <div id="audio-dump"></div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://unpkg.com/simple-peer@9.11.1/simplepeer.min.js"></script>
