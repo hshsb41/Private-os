@@ -3,14 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Voice Chat</title>
+    <title>Voice Chat Pro</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div id="audio-dump"></div>
-
-    <!-- Screen 1: Join -->
+    <!-- Join Screen -->
     <div id="join-screen" class="screen">
         <div class="join-wrap">
             <div class="avatar-box" onclick="document.getElementById('avatar-input').click()">
@@ -22,7 +20,7 @@
         </div>
     </div>
 
-    <!-- Screen 2: App -->
+    <!-- Main App -->
     <div id="app-screen" class="screen hidden">
         <header class="header">
             <div class="h-left">
@@ -41,12 +39,13 @@
             </div>
             <div id="chat-view" class="view hidden">
                 <div id="chat-box" class="chat-list"></div>
-                <div class="chat-bar">
+                <!-- Chat Form -->
+                <form id="chat-form" class="chat-bar">
                     <label for="c-img" class="bar-icon"><i class="fas fa-image"></i></label>
                     <input type="file" id="c-img" hidden accept="image/*">
                     <input type="text" id="c-input" placeholder="Message..." autocomplete="off">
-                    <button id="send-btn"><i class="fas fa-paper-plane"></i></button>
-                </div>
+                    <button type="submit" id="send-btn"><i class="fas fa-paper-plane"></i></button>
+                </form>
             </div>
         </div>
 
@@ -57,6 +56,9 @@
             <button id="leave-btn" class="ctrl-b red"><i class="fas fa-phone-slash"></i></button>
         </nav>
     </div>
+
+    <!-- Container for remote audio elements -->
+    <div id="audio-dump"></div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://unpkg.com/simple-peer@9.11.1/simplepeer.min.js"></script>

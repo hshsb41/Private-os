@@ -1,6 +1,7 @@
 const socket = io();
 let localStream, myName = "", myAvatar = "https://i.ibb.co/Y4KjTgvP/Picsart-26-02-07-02-21-57-621.jpg";
 let peers = {};
+let audioCtx;
 
 const ice = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }] };
 
@@ -15,7 +16,10 @@ document.getElementById('join-btn').onclick = async () => {
     myName = document.getElementById('username').value.trim();
     if (!myName) return;
     try {
-        // माइक एक्सेस माग्ने
+        // iPhone Audio Unlock: User interaction मा AudioContext सुरु गर्नैपर्छ
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+
         localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         
         document.getElementById('join-screen').classList.add('hidden');
@@ -26,7 +30,7 @@ document.getElementById('join-btn').onclick = async () => {
         initTimer();
         micCheck();
     } catch (e) {
-        alert("Microphone Required! Please allow mic access in your browser settings.");
+        alert("Microphone Required! Please allow mic access.");
     }
 };
 
@@ -62,23 +66,37 @@ function startPeer(id, init) {
     p.on('stream', s => {
         let a = document.createElement('audio');
         a.srcObject = s; a.autoplay = true;
+        a.playsInline = true; // iPhone sound fix
         document.getElementById('audio-dump').appendChild(a);
+        
+        // iPhone Force Play: User interaction पछि बज्न दिने
+        a.play().catch(e => console.log("Audio play blocked by iOS, will play on next click"));
     });
     return p;
 }
 
-// CHAT
+// CHAT FORM SUBMIT (iPhone Keyboard Fix)
+const chatForm = document.getElementById('chat-form');
 const inp = document.getElementById('c-input');
-const send = (t = "", i = null) => {
-    if (!t && !i) return;
-    socket.emit('msg', { t, i, name: myName });
-    inp.value = "";
+
+chatForm.onsubmit = (e) => {
+    e.preventDefault();
+    const t = inp.value.trim();
+    if(t) {
+        socket.emit('msg', { t, i: null, name: myName });
+        inp.value = "";
+        // Keep focus for next message on iPhone
+        inp.focus();
+    }
 };
-document.getElementById('send-btn').onclick = () => send(inp.value);
-inp.onkeypress = (e) => e.key === 'Enter' && send(inp.value);
+
+document.getElementById('send-btn').onclick = () => {
+    chatForm.dispatchEvent(new Event('submit'));
+};
+
 document.getElementById('c-img').onchange = (e) => {
     const r = new FileReader();
-    r.onload = () => send("", r.result);
+    r.onload = () => socket.emit('msg', { t: "", i: r.result, name: myName });
     r.readAsDataURL(e.target.files[0]);
 };
 
@@ -106,13 +124,16 @@ function tab(t) {
     document.querySelectorAll('.nav-btn').forEach(i => i.classList.remove('active'));
     document.getElementById(`${t}-view`).classList.remove('hidden');
     event.currentTarget.classList.add('active');
+    
+    // Resume audio context if it was blocked
+    if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
 }
 
 function countUpdate() { document.getElementById('count').innerText = Object.keys(peers).length + 1; }
 
 function micCheck() {
-    const ctx = new AudioContext(), ana = ctx.createAnalyser();
-    ctx.createMediaStreamSource(localStream).connect(ana);
+    const ana = audioCtx.createAnalyser();
+    audioCtx.createMediaStreamSource(localStream).connect(ana);
     const data = new Uint8Array(ana.frequencyBinCount);
     const check = () => {
         ana.getByteFrequencyData(data);
