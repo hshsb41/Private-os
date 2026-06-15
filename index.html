@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- Zoom completely disabled for mobile -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Voice Chat</title>
     <link rel="stylesheet" href="style.css">
@@ -15,8 +14,8 @@
                 <img id="preview" src="https://i.ibb.co/Y4KjTgvP/Picsart-26-02-07-02-21-57-621.jpg">
                 <input type="file" id="avatar-input" hidden accept="image/*">
             </div>
-            <input type="text" id="username" placeholder="Name" maxlength="10">
-            <button id="join-btn">JOIN NOW</button>
+            <input type="text" id="username" placeholder="Name" maxlength="10" autocomplete="off">
+            <button id="join-btn">JOIN CALL</button>
         </div>
     </div>
 
@@ -27,7 +26,7 @@
                 <b>GLOBAL VOICE</b>
                 <span id="timer">00:00</span>
             </div>
-            <div class="online-pill"><i class="fas fa-circle"></i> <span id="count">1</span></div>
+            <div class="online-pill"><span id="count">1</span> ONLINE</div>
         </header>
 
         <div class="main-container">
@@ -37,18 +36,17 @@
             <div id="chat-view" class="view hidden">
                 <div id="chat-box" class="chat-list"></div>
                 <div class="chat-bar">
-                    <label for="c-img" class="bar-icon"><i class="fas fa-image"></i></label>
+                    <label for="c-img" class="bar-icon"><i class="fas fa-plus-circle"></i></label>
                     <input type="file" id="c-img" hidden accept="image/*">
-                    <input type="text" id="c-input" placeholder="Type...">
+                    <input type="text" id="c-input" placeholder="Message..." autocomplete="off">
                     <button id="send-btn"><i class="fas fa-paper-plane"></i></button>
                 </div>
             </div>
         </div>
 
         <nav class="footer-nav">
-            <div class="nav-btn active" onclick="tab('voice')"><i class="fas fa-microphone-alt"></i><span>Voice</span></div>
-            <div class="nav-btn" onclick="tab('chat')"><i class="fas fa-comment-alt"></i><span>Chat</span></div>
-            <div class="sep"></div>
+            <div class="nav-btn active" onclick="tab('voice')"><i class="fas fa-microphone-lines"></i><span>Voice</span></div>
+            <div class="nav-btn" onclick="tab('chat')"><i class="fas fa-comment-dots"></i><span>Chat</span></div>
             <button id="mute-btn" class="ctrl-b"><i class="fas fa-microphone"></i></button>
             <button id="leave-btn" class="ctrl-b red"><i class="fas fa-phone-slash"></i></button>
         </nav>
